@@ -11,7 +11,7 @@ export interface Habit {
 
 interface HabitState {
   habits: Habit[];
-  isLoading: false;
+  isLoading: boolean;
   error: string | null;
 }
 
@@ -21,9 +21,9 @@ const initialState: HabitState = {
   error: null,
 };
 
-const fetchHabits = createAsyncThunk("habits/fetchHabits", async () => {
+export const fetchHabits = createAsyncThunk("habits/fetchHabits", async () => {
   // Simulating an API Call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 3000));
   const mockHabits: Habit[] = [
     {
       id: uuidv4(),
@@ -47,6 +47,8 @@ const fetchHabits = createAsyncThunk("habits/fetchHabits", async () => {
       createdAt: new Date().toISOString(),
     },
   ];
+
+  return mockHabits;
 });
 
 export const habitSlice = createSlice({
@@ -86,6 +88,21 @@ export const habitSlice = createSlice({
         }
       }
     },
+    // removeHabit: (state, action: PayloadAction<{ id: string }>) => {},
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchHabits.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(fetchHabits.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.habits = action.payload;
+      })
+      .addCase(fetchHabits.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || "Failed to fetch habits";
+      });
   },
 });
 
